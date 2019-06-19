@@ -1,0 +1,11 @@
+--- code/threads/copyright.h	2019-03-19 02:14:22.000000000 -0300
++++ code/threads/copyright.h	2019-04-21 02:25:42.000000000 -0300
+@@ -22,7 +22,7 @@
+ /// TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+ 
+ 
+-static const char *VERSION = "Nachos (unr19b)";
++static const char *VERSION = "Nachos (unr19c)";
+ 
+ static const char *COPYRIGHT = "\
+ Copyright (c) 1992-1993 The Regents of the University of California.\n\

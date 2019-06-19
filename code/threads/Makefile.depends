@@ -1,0 +1,124 @@
+synch_console.o: ../userprog/synch_console.cc \
+ ../userprog/synch_console.hh ../machine/console.hh ../lib/utility.hh \
+ ../lib/debug.hh ../machine/system_dep.hh ../threads/synch.hh \
+ ../lib/list.hh ../lib/utility.hh
+main.o: ../threads/main.cc ../threads/copyright.h ../lib/utility.hh \
+ ../lib/debug.hh ../machine/system_dep.hh ../threads/system.hh \
+ ../threads/thread.hh ../threads/synch.hh ../lib/list.hh \
+ ../lib/utility.hh ../threads/scheduler.hh ../userprog/synch_console.hh \
+ ../machine/console.hh ../threads/synch.hh ../machine/interrupt.hh \
+ ../machine/statistics.hh ../machine/timer.hh
+port.o: ../threads/port.cc ../threads/port.hh ../threads/synch.hh \
+ ../lib/list.hh ../lib/utility.hh ../lib/debug.hh \
+ ../machine/system_dep.hh ../threads/system.hh ../threads/thread.hh \
+ ../lib/utility.hh ../threads/scheduler.hh ../userprog/synch_console.hh \
+ ../machine/console.hh ../threads/synch.hh ../machine/interrupt.hh \
+ ../machine/statistics.hh ../machine/timer.hh ../threads/synch_list.hh
+scheduler.o: ../threads/scheduler.cc ../threads/scheduler.hh \
+ ../threads/thread.hh ../lib/utility.hh ../lib/debug.hh \
+ ../machine/system_dep.hh ../threads/synch.hh ../lib/list.hh \
+ ../lib/utility.hh ../threads/system.hh ../userprog/synch_console.hh \
+ ../machine/console.hh ../threads/synch.hh ../machine/interrupt.hh \
+ ../machine/statistics.hh ../machine/timer.hh
+synch.o: ../threads/synch.cc ../threads/synch.hh ../lib/list.hh \
+ ../lib/utility.hh ../lib/debug.hh ../machine/system_dep.hh \
+ ../threads/system.hh ../threads/thread.hh ../lib/utility.hh \
+ ../threads/scheduler.hh ../userprog/synch_console.hh \
+ ../machine/console.hh ../threads/synch.hh ../machine/interrupt.hh \
+ ../machine/statistics.hh ../machine/timer.hh ../threads/synch_list.hh \
+ ../threads/port.hh
+system.o: ../threads/system.cc ../threads/system.hh ../threads/thread.hh \
+ ../lib/utility.hh ../lib/debug.hh ../machine/system_dep.hh \
+ ../threads/synch.hh ../lib/list.hh ../lib/utility.hh \
+ ../threads/scheduler.hh ../userprog/synch_console.hh \
+ ../machine/console.hh ../threads/synch.hh ../machine/interrupt.hh \
+ ../machine/statistics.hh ../machine/timer.hh ../threads/preemptive.hh
+switch.o: ../threads/switch.S ../threads/switch.h
+thread.o: ../threads/thread.cc ../threads/thread.hh ../lib/utility.hh \
+ ../lib/debug.hh ../machine/system_dep.hh ../threads/synch.hh \
+ ../lib/list.hh ../lib/utility.hh ../threads/switch.h \
+ ../threads/system.hh ../threads/scheduler.hh \
+ ../userprog/synch_console.hh ../machine/console.hh ../threads/synch.hh \
+ ../machine/interrupt.hh ../machine/statistics.hh ../machine/timer.hh \
+ ../threads/port.hh ../threads/synch_list.hh ../filesys/open_file.hh
+debug.o: ../lib/debug.cc ../lib/debug.hh ../lib/utility.hh \
+ ../machine/system_dep.hh
+utility.o: ../lib/utility.cc ../lib/utility.hh ../lib/debug.hh \
+ ../machine/system_dep.hh
+thread_test.o: ../threads/thread_test.cc ../threads/synch.hh \
+ ../lib/list.hh ../lib/utility.hh ../lib/debug.hh \
+ ../machine/system_dep.hh ../lib/utility.hh ../threads/system.hh \
+ ../threads/thread.hh ../threads/scheduler.hh \
+ ../userprog/synch_console.hh ../machine/console.hh ../threads/synch.hh \
+ ../machine/interrupt.hh ../machine/statistics.hh ../machine/timer.hh
+console.o: ../machine/console.cc ../machine/console.hh ../lib/utility.hh \
+ ../lib/debug.hh ../machine/system_dep.hh ../threads/system.hh \
+ ../threads/thread.hh ../threads/synch.hh ../lib/list.hh \
+ ../lib/utility.hh ../threads/scheduler.hh ../userprog/synch_console.hh \
+ ../machine/console.hh ../threads/synch.hh ../machine/interrupt.hh \
+ ../machine/statistics.hh ../machine/timer.hh
+interrupt.o: ../machine/interrupt.cc ../machine/interrupt.hh \
+ ../lib/list.hh ../lib/utility.hh ../lib/debug.hh \
+ ../machine/system_dep.hh ../threads/system.hh ../threads/thread.hh \
+ ../lib/utility.hh ../threads/synch.hh ../threads/scheduler.hh \
+ ../userprog/synch_console.hh ../machine/console.hh ../threads/synch.hh \
+ ../machine/interrupt.hh ../machine/statistics.hh ../machine/timer.hh
+system_dep.o: ../machine/system_dep.cc ../machine/interrupt.hh \
+ ../lib/list.hh ../lib/utility.hh ../lib/debug.hh \
+ ../machine/system_dep.hh ../threads/system.hh ../threads/thread.hh \
+ ../lib/utility.hh ../threads/synch.hh ../threads/scheduler.hh \
+ ../userprog/synch_console.hh ../machine/console.hh ../threads/synch.hh \
+ ../machine/interrupt.hh ../machine/statistics.hh ../machine/timer.hh
+statistics.o: ../machine/statistics.cc ../machine/statistics.hh \
+ ../lib/utility.hh ../lib/debug.hh ../machine/system_dep.hh
+timer.o: ../machine/timer.cc ../machine/timer.hh ../lib/utility.hh \
+ ../lib/debug.hh ../machine/system_dep.hh ../threads/system.hh \
+ ../threads/thread.hh ../threads/synch.hh ../lib/list.hh \
+ ../lib/utility.hh ../threads/scheduler.hh ../userprog/synch_console.hh \
+ ../machine/console.hh ../threads/synch.hh ../machine/interrupt.hh \
+ ../machine/statistics.hh ../machine/timer.hh
+preemptive.o: ../threads/preemptive.cc ../threads/preemptive.hh \
+ ../threads/system.hh ../threads/thread.hh ../lib/utility.hh \
+ ../lib/debug.hh ../machine/system_dep.hh ../threads/synch.hh \
+ ../lib/list.hh ../lib/utility.hh ../threads/scheduler.hh \
+ ../userprog/synch_console.hh ../machine/console.hh ../threads/synch.hh \
+ ../machine/interrupt.hh ../machine/statistics.hh ../machine/timer.hh
+synch_console.o: ../userprog/synch_console.hh ../machine/console.hh \
+ ../lib/utility.hh ../lib/debug.hh ../machine/system_dep.hh \
+ ../threads/synch.hh ../lib/list.hh ../lib/utility.hh
+copyright.o: ../threads/copyright.h
+port.o: ../threads/port.hh ../threads/synch.hh ../lib/list.hh \
+ ../lib/utility.hh ../lib/debug.hh ../machine/system_dep.hh \
+ ../threads/system.hh ../threads/thread.hh ../lib/utility.hh \
+ ../threads/scheduler.hh ../userprog/synch_console.hh \
+ ../machine/console.hh ../threads/synch.hh ../machine/interrupt.hh \
+ ../machine/statistics.hh ../machine/timer.hh ../threads/synch_list.hh
+scheduler.o: ../threads/scheduler.hh ../threads/thread.hh \
+ ../lib/utility.hh ../lib/debug.hh ../machine/system_dep.hh \
+ ../threads/synch.hh ../lib/list.hh ../lib/utility.hh
+synch.o: ../threads/synch.hh ../lib/list.hh ../lib/utility.hh \
+ ../lib/debug.hh ../machine/system_dep.hh
+synch_list.o: ../threads/synch_list.hh ../threads/synch.hh ../lib/list.hh \
+ ../lib/utility.hh ../lib/debug.hh ../machine/system_dep.hh \
+ ../threads/thread.hh ../lib/utility.hh
+system.o: ../threads/system.hh ../threads/thread.hh ../lib/utility.hh \
+ ../lib/debug.hh ../machine/system_dep.hh ../threads/synch.hh \
+ ../lib/list.hh ../lib/utility.hh ../threads/scheduler.hh \
+ ../userprog/synch_console.hh ../machine/console.hh ../threads/synch.hh \
+ ../machine/interrupt.hh ../machine/statistics.hh ../machine/timer.hh
+thread.o: ../threads/thread.hh ../lib/utility.hh ../lib/debug.hh \
+ ../machine/system_dep.hh ../threads/synch.hh ../lib/list.hh \
+ ../lib/utility.hh
+debug.o: ../lib/debug.hh
+list.o: ../lib/list.hh ../lib/utility.hh ../lib/debug.hh \
+ ../machine/system_dep.hh
+utility.o: ../lib/utility.hh ../lib/debug.hh ../machine/system_dep.hh
+console.o: ../machine/console.hh ../lib/utility.hh ../lib/debug.hh \
+ ../machine/system_dep.hh
+interrupt.o: ../machine/interrupt.hh ../lib/list.hh ../lib/utility.hh \
+ ../lib/debug.hh ../machine/system_dep.hh
+system_dep.o: ../machine/system_dep.hh
+statistics.o: ../machine/statistics.hh
+timer.o: ../machine/timer.hh ../lib/utility.hh ../lib/debug.hh \
+ ../machine/system_dep.hh
+preemptive.o: ../threads/preemptive.hh

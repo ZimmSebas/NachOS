@@ -1,0 +1,25 @@
+--- code/threads/switch.S	2019-03-19 02:14:22.000000000 -0300
++++ code/threads/switch.S	2019-04-21 02:25:42.000000000 -0300
+@@ -127,20 +127,17 @@
+ /// * `rdi` -- points to `Thread::Finish` [`WhenDonePCState`].
+         .globl  ThreadRoot
+ ThreadRoot:
+-        push   %rbp
+-        mov    %rsp,%rbp
+         push   %rdi
+         push   %rsi
+         callq  *%rax  // StartupPC()
+         mov    %rbx,%rdi
+-        pop    %rsi
++        mov    (%rsp),%rsi
+         callq  *%rsi  // InitialPC(InitialArg)
+         pop    %rsi
++        pop    %rsi
+         callq  *%rsi  // WhenDonePC()
+ 
+         // NOT REACHED.
+-        mov    %rbp,%rsp
+-        pop    %rbp
+         ret
+ 
+ /// void SWITCH(Thread *t1, Thread *t2)
