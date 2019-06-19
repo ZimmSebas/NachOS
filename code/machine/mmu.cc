@@ -42,14 +42,11 @@ MMU::MMU()
           mainMemory[i] = 0;
 
 #ifdef USE_TLB
-	DEBUG('z',"ACTIVAMO TLB BRO \n");
     tlb = new TranslationEntry[TLB_SIZE];
     for (unsigned i = 0; i < TLB_SIZE; i++)
         tlb[i].valid = false;
     pageTable = nullptr;
-	DEBUG('z',"ANDUVO TLB BRO \n");
 #else  // Use linear page table.
-    DEBUG('z',"SHIT BRO \n");
     tlb = nullptr;
     pageTable = nullptr;
 #endif
