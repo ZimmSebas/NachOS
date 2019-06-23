@@ -72,8 +72,9 @@ DefaultHandler(ExceptionType et)
             
             pos++;
             pos %= TLB_SIZE;
-            
+                        
             machine->GetMMU()->tlb[pos] = tentry;
+            
             #ifdef USE_TLB
             stats->fallosTLB++;
 			#endif
@@ -193,7 +194,7 @@ SyscallHandler(ExceptionType _et)
             argumento->av = argvKernel;
             
             char *name = new char [64];
-            strncpy(name, "Ejecutable", 64);
+            strncpy(name, filename, 64);
             
             Thread *hijoThread = new Thread(name,((bool) joineable) );
             

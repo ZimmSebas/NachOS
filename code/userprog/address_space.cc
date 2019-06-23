@@ -168,9 +168,13 @@ AddressSpace::SaveState()
 void
 AddressSpace::RestoreState()
 {
+	
     #ifndef USE_TLB
     machine->GetMMU()->pageTable     = pageTable;
     machine->GetMMU()->pageTableSize = numPages;
+    #else
+    for(unsigned i = 0;i<TLB_SIZE;i++)
+        machine->GetMMU()->tlb[i].valid = false;    
     #endif
 }
 
@@ -181,8 +185,7 @@ AddressSpace::GetTranslationEntry(int vpn){
 
 bool
 AddressSpace::CargarPagina(int vpn){
-	
-	
+
 	//~ #ifdef VMEM
 	//~ if(nohayswap){
 		//~ CrearSwap();
@@ -266,6 +269,12 @@ AddressSpace::CargarPagina(int vpn){
             posicion++;
         }
     }
+    //~ pageTable[vpn].valid        = true;
+    
+      if ( !(noffH.code.size + noffH.code.virtualAddr > PAGE_SIZE * vpn) &&
+		!( noffH.initData.size > 0 && noffH.initData.virtualAddr < PAGE_SIZE * (vpn+1) )){
+		DEBUG('h',"FUUUUUUUUUUUUUUCKKKKKKKKKKKKKKKKKKK\n");
+	}
     
     return true;
 }

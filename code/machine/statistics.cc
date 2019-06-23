@@ -46,6 +46,7 @@ Statistics::Print()
     printf("Paging: faults %u\n", numPageFaults);
     printf("Network I/O: packets received %u, sent %u\n",
            numPacketsRecvd, numPacketsSent);
+           
 #ifdef USE_TLB
 	printf("TLB: Accesos: %lu Fallos: %lu\n", accesosTLB, fallosTLB);
 	printf("TLB: hit ratio %lf\n", (accesosTLB-fallosTLB)/((double)accesosTLB));

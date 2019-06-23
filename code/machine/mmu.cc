@@ -31,6 +31,7 @@
 #include "mmu.hh"
 #include "endianness.hh"
 
+
 #ifdef USE_TLB
 extern Statistics *stats;
 #endif
@@ -40,6 +41,7 @@ MMU::MMU()
     mainMemory = new char [MEMORY_SIZE];
     for (unsigned i = 0; i < MEMORY_SIZE; i++)
           mainMemory[i] = 0;
+
 
 #ifdef USE_TLB
     tlb = new TranslationEntry[TLB_SIZE];
@@ -174,9 +176,11 @@ MMU::RetrievePageEntry(unsigned vpn, TranslationEntry **entry) const
         // Use the TLB.
 
         unsigned i;
+        
         #ifdef USE_TLB
         stats->accesosTLB++;
 		#endif
+
         for (i = 0; i < TLB_SIZE; i++)
             if (tlb[i].valid && tlb[i].virtualPage == vpn) {
                 *entry = &tlb[i];  // FOUND!
@@ -224,7 +228,8 @@ MMU::Translate(unsigned virtAddr, unsigned *physAddr,
     // from the virtual address.
     unsigned vpn    = (unsigned) virtAddr / PAGE_SIZE;
     unsigned offset = (unsigned) virtAddr % PAGE_SIZE;
-
+	
+	
     TranslationEntry *entry;
     ExceptionType exception = RetrievePageEntry(vpn, &entry);
     if (exception != NO_EXCEPTION)
@@ -251,6 +256,7 @@ MMU::Translate(unsigned virtAddr, unsigned *physAddr,
         entry->dirty = true;
 
     *physAddr = pageFrame * PAGE_SIZE + offset;
+    
     ASSERT(*physAddr >= 0 && *physAddr + size <= MEMORY_SIZE);
     DEBUG_CONT('a', "physical address 0x%X\n", *physAddr);
     return NO_EXCEPTION;

@@ -58,7 +58,6 @@ Thread::Thread(const char *threadName, bool usojoin, unsigned prio)
     //ojo que todos los hilos son procesos (separar del constructor)
     
     myid = corriendo->Add(this);
-	DEBUG('y',"Soy el proceso %s y mi id es %d",name,myid);
 	
     space     = nullptr;
 #endif
@@ -245,14 +244,13 @@ Thread::Yield()
     ASSERT(this == currentThread);
     
     DEBUG('t', "Yielding thread \"%s\"\n", GetName());
-	
+        
     #ifdef USE_TLB
-    for(unsigned i = 0;i<TLB_SIZE;i++){
+    for(unsigned i = 0;i<TLB_SIZE;i++)
         machine->GetMMU()->tlb[i].valid = false;
-    }
     #endif
 
-	scheduler->ReadyToRun(this);    
+	scheduler->ReadyToRun(this);
 
     Thread *nextThread = scheduler->FindNextToRun();
     if (nextThread != nullptr) {
