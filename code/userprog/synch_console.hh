@@ -32,7 +32,7 @@ private:
 	Semaphore *readAvail;
 	Semaphore *writeDone;
 
-  const char *name;
+	const char *name;
 	
 };
 #endif

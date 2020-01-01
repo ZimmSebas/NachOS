@@ -70,7 +70,7 @@ void WriteBufferToUser(const char *buffer, int userAddress, unsigned byteCount){
 			pudeesc = machine->WriteMem(userAddress, 1, *buffer);
 			if(pudeesc){
 				userAddress++;
-				*buffer++;
+				buffer++;
 				break;
 			}
 		}

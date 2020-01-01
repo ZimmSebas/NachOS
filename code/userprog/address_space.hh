@@ -43,12 +43,13 @@ public:
     TranslationEntry GetTranslationEntry(int vpn);
     bool CargarPagina(int vpn); // Carga la pagina vpn a la memoria fisica
     
-    
+    /// Assume linear page table translation for now!
+    TranslationEntry *pageTable;
 
 private:
 
-    /// Assume linear page table translation for now!
-    TranslationEntry *pageTable;
+    //~ /// Assume linear page table translation for now!
+    //~ TranslationEntry *pageTable;
 
     /// Number of pages in the virtual address space.
     unsigned numPages;
@@ -57,6 +58,9 @@ private:
     
     #ifdef VMEM
 	void CrearSwap();
+    
+    void WriteSwap();
+    
     char* nswap;
     bool nohayswap;
     #endif

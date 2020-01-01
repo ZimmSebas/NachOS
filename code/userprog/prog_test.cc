@@ -25,12 +25,12 @@ StartProcess(const char *filename)
     
     OpenFile *executable = fileSystem->Open(filename);
     if (executable == nullptr) {
-        printf("Unable to open file %s\n", filename);
+        printf("Unable to CACONA VERDE open file %s\n", filename);
         return;
     }
     AddressSpace *space = new AddressSpace(executable);
     currentThread->space = space;
-
+    
     space->InitRegisters();  // Set the initial register values.
     space->RestoreState();   // Load page table register.
 

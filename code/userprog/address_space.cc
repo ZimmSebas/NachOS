@@ -104,22 +104,23 @@ AddressSpace::AddressSpace(OpenFile *executable)
 /// Nothing for now!
 AddressSpace::~AddressSpace()
 {
-    
-    
     for (unsigned i = 0; i < numPages; i++){ //Liberamos las paginas utilizadas
-        if(pageTable[i].physicalPage != -1)
+        if (pageTable[i].physicalPage != -1){
             paginas->Clear(pageTable[i].physicalPage);
-            //~ Borrar(pageTable[i].physicalPage);
+			#ifdef VMEM
+				coremap->Borrar(pageTable[i].physicalPage);
+			#endif
+		}
     }
     delete [] pageTable;
     delete exec;
     
-    //~ #ifdef VMEM
-	//~ if (!fileSystem->Remove(nswap))
-		//~ DEBUG('a', "Error: llamada a Remove fallo.\n");
+    #ifdef VMEM
+	if (!fileSystem->Remove(nswap))
+		DEBUG('a', "Error: llamada a Remove fallo.\n");
 		
-	//~ delete [] nswap;
-    //~ #endif
+	delete [] nswap;
+    #endif
     
 }
 
@@ -185,13 +186,13 @@ AddressSpace::GetTranslationEntry(int vpn){
 
 bool
 AddressSpace::CargarPagina(int vpn){
-
-	//~ #ifdef VMEM
-	//~ if(nohayswap){
-		//~ CrearSwap();
-		//~ nohayswap = false;
-	//~ }
-	//~ #endif
+		
+	#ifdef VMEM
+	if(nohayswap){
+		CrearSwap();
+		nohayswap = false;
+	}
+	#endif
 	
     noffHeader noffH;
     exec->ReadAt((char *) &noffH, sizeof noffH, 0);
@@ -200,20 +201,58 @@ AddressSpace::CargarPagina(int vpn){
         SwapHeader(&noffH);
     ASSERT(noffH.noffMagic == NOFF_MAGIC);
     
-    if(!paginas->CountClear())
-        return false; // no hay paginas disponibles
-    pageTable[vpn].physicalPage = paginas->Find();
+	char *mainMemory = machine->GetMMU()->mainMemory;
+	
+	#ifdef VMEM
+		if(!paginas->CountClear()){
+			WriteSwap();
+			return false; // no hay paginas disponibles
+		}
+	#endif
+		
+		pageTable[vpn].physicalPage = paginas->Find();
+		pageTable[vpn].use          = false;
+		pageTable[vpn].dirty        = true;
+		pageTable[vpn].readOnly     = false;
+	
+	#ifdef VMEM	
+		if(pageTable[vpn].physicalPage ==  -1){
+			WriteSwap();
+			return false;
+		}
+
+		
+		if(pageTable[vpn].valid){ // En este caso la pagina esta en SWAP
+			OpenFile *archivo = fileSystem->Open(nswap);
+			int leido = 0;
+			int ppn = pageTable[vpn].physicalPage;
+
+			leido = archivo->ReadAt(mainMemory+(ppn*PAGE_SIZE),PAGE_SIZE,PAGE_SIZE*vpn);
+			
+			delete archivo;
+			
+			if(leido != PAGE_SIZE){
+				pageTable[vpn].physicalPage = -1;
+				paginas->Clear(ppn);
+				return false;
+			}
+			
+			coremap->Agregar(currentThread->myid, vpn, ppn);
+			return true;
+		}
+	
+	#else 
+		if(!paginas->CountClear()){
+		   return false; // no hay paginas disponibles
+		}
+	
+	#endif
     pageTable[vpn].valid        = true;
-    pageTable[vpn].use          = false;
-    pageTable[vpn].dirty        = false;
-    pageTable[vpn].readOnly     = false;    
 
     #ifdef VMEM
         coremap->Agregar(currentThread->myid,vpn,pageTable[vpn].physicalPage);
     #endif
     
-    char *mainMemory = machine->GetMMU()->mainMemory;
-
     // Zero out the entire page to zero
     memset(mainMemory+pageTable[vpn].physicalPage*PAGE_SIZE, 0, PAGE_SIZE);
 
@@ -269,12 +308,6 @@ AddressSpace::CargarPagina(int vpn){
             posicion++;
         }
     }
-    //~ pageTable[vpn].valid        = true;
-    
-      if ( !(noffH.code.size + noffH.code.virtualAddr > PAGE_SIZE * vpn) &&
-		!( noffH.initData.size > 0 && noffH.initData.virtualAddr < PAGE_SIZE * (vpn+1) )){
-		DEBUG('h',"FUUUUUUUUUUUUUUCKKKKKKKKKKKKKKKKKKK\n");
-	}
     
     return true;
 }
@@ -282,7 +315,7 @@ AddressSpace::CargarPagina(int vpn){
  
 #ifdef VMEM
 void AddressSpace::CrearSwap(){
-
+		
 	string nombrearchivo;
 	stringstream sst;
 	sst << currentThread->myid;
@@ -293,9 +326,71 @@ void AddressSpace::CrearSwap(){
 
 	strcpy(nswap,nombrearchivo.c_str());
 
-	if (!fileSystem->Create(nswap,0))
+	unsigned size = numPages * PAGE_SIZE;
+
+	if (!fileSystem->Create(nswap,size))
 		DEBUG('a', "Error: llamada a Create fallo.\n");
 }
+
+void AddressSpace::WriteSwap(){
+	int ppn = coremap->Reloj();
+	
+	char *mainMemory = machine->GetMMU()->mainMemory;
+
+	pair <int,int> data = coremap->PidoInfo(ppn);
+
+	int pid = data.first;
+	unsigned vpn = data.second;
+	
+	if(paginas->CountClear()){
+		DEBUG('a',"Se liberó memoria mientras estabamos escribiendo el Swap\n");
+		ASSERT(false);
+		
+		return;
+	}
+  
+	Thread *thswapeando = corriendo->Get(pid);
+	
+	
+	if(thswapeando->space->pageTable[vpn].dirty == true){
+
+		string swapname;
+
+		
+		if(pid == currentThread->myid)
+			for (unsigned i = 0; i < TLB_SIZE; i++)
+				if(machine->GetMMU()->tlb[i].virtualPage == vpn)
+					machine->GetMMU()->tlb[i].valid = false;
+		
+		stringstream sst;
+		sst << pid;
+
+		swapname = "SWAP." + sst.str();
+		
+		OpenFile *archivo = fileSystem->Open(swapname.c_str());
+		int escrito = 0;
+
+		escrito = archivo->WriteAt(mainMemory+(ppn*PAGE_SIZE),PAGE_SIZE,PAGE_SIZE*vpn);
+		
+		delete archivo;
+		
+		if(escrito != PAGE_SIZE){
+			DEBUG('h', "The thread didn't write enough to match the page size\n");
+			return;
+		}
+		
+		thswapeando->space->pageTable[vpn].physicalPage = -1;
+		
+		
+		thswapeando->space->pageTable[vpn].dirty = false;
+
+	}
+	
+	paginas->Clear(ppn);
+	coremap->Borrar(ppn);
+}	
+
+
 #endif
     
    

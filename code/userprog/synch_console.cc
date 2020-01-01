@@ -31,8 +31,8 @@ SynchConsole::GetName(){
     return name;
 }
 
-
 SynchConsole::SynchConsole(const char *n){
+    
     readAvail = new Semaphore("read synch consola",0);
     writeDone = new Semaphore("write synch consola",0);
     lock = new Lock("synch consola");
@@ -63,8 +63,8 @@ SynchConsole::WriteChar(const char *data)
     ASSERT(data != nullptr);
     lock->Acquire();  // only one disk I/O at a time
     consola->PutChar(*data);
-    lock->Release();
     writeDone->P();
+    lock->Release();
 }
 
 void

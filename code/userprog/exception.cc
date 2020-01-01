@@ -51,56 +51,47 @@ IncrementPC()
 ///
 /// * `et` is the kind of exception.  The list of possible exceptions is in
 ///   `machine/exception_type.hh`.
+
+static void
+PageFaultHandler(ExceptionType et)
+{
+  int virtaddr = machine->ReadRegister(BAD_VADDR_REG);
+  int virtpage = virtaddr / PAGE_SIZE;
+  static int pos = 0;
+
+  TranslationEntry tentry = currentThread->space->GetTranslationEntry(virtpage);
+  if(tentry.valid == false || (tentry.valid == true && tentry.physicalPage == -1)){ // La pagina no esta cargada en memoria
+    currentThread->space->CargarPagina(virtpage);
+    return;
+  }
+  //Conseguimos la translation entry en posicion X
+#ifdef USE_TLB
+  pos++;
+  pos %= TLB_SIZE;
+  machine->GetMMU()->tlb[pos] = tentry;
+  stats->fallosTLB++;
+#endif
+  return;
+}
+
+static void
+ReadOnlytHandler(ExceptionType et)
+{
+  fprintf(stderr, "Se intentó acceder a una página de solo lectura\n");
+  ASSERT(false);
+  return;
+}
+
 static void
 DefaultHandler(ExceptionType et)
 {
-    int exceptionArg = machine->ReadRegister(2);
-	
-	switch (et) {
-        case PAGE_FAULT_EXCEPTION:{
-            int virtaddr = machine->ReadRegister(BAD_VADDR_REG);
-            int virtpage = virtaddr / PAGE_SIZE;
-            static int pos = 0;
-
-            TranslationEntry tentry = currentThread->space->GetTranslationEntry(virtpage);
-            if(tentry.valid == false){ // La pagina no esta cargada en memoria
-				currentThread->space->CargarPagina(virtpage);
-				break;
-			}
-            
-            //Conseguimos la translation entry en posicion X
-            
-            pos++;
-            pos %= TLB_SIZE;
-                        
-            machine->GetMMU()->tlb[pos] = tentry;
-            
-            #ifdef USE_TLB
-            stats->fallosTLB++;
-			#endif
-
-            break;
-        }
-        case READ_ONLY_EXCEPTION: {
-			fprintf(stderr, "Se intentó acceder a una página de solo lectura\n");
-			ASSERT(false);
-			break;
-        }
-        default:{
-
-			fprintf(stderr, "Unexpected user mode exception: %s, arg %d.\n",
-					ExceptionTypeToString(et), exceptionArg);
-			ASSERT(false);    
-        }
-	}
-	
-	
-
-
+  int exceptionArg = machine->ReadRegister(2);
+  fprintf(stderr, "Unexpected user mode exception: %s, arg %d.\n",
+      ExceptionTypeToString(et), exceptionArg);
+  ASSERT(false);    
 }
 
 void 
-
 Ejecutar(void *arg_){ //Este nombre es muy poco cool
 
 
@@ -149,9 +140,6 @@ SyscallHandler(ExceptionType _et)
         }
 
         case SC_EXIT: {
-            //~ #ifdef USE_TLB
-            //~ stats->Print();
-			//~ #endif
             int status = machine->ReadRegister(4);
             if(status != 0){
                 DEBUG('t', "Thread %s termina con un retorno distinto a cero \n",
@@ -161,6 +149,7 @@ SyscallHandler(ExceptionType _et)
                 currentThread->GetName());
             }
             currentThread->Finish(status);
+
             break;
         }
 
@@ -220,7 +209,7 @@ SyscallHandler(ExceptionType _et)
                 break;
             }
                         
-            if (!fileSystem->Create(filename,0))
+            if (!fileSystem->Create(filename,741))
                 DEBUG('a', "Error: llamada a Create fallo.\n");
 
             break;
@@ -332,12 +321,12 @@ SyscallHandler(ExceptionType _et)
 			char *buffer = new char[size];
             
 			if(bufferUsuario == 0){
-				DEBUG('a',"--------------- Error, bufferUsuario nulo--------------- \n");
+				DEBUG('a',"Error, bufferUsuario nulo\n");
 				break;
 			}
 			
 				if(size == 0){
-					DEBUG('a',"--------------- Error, tamaño de lectura nulo--------------- \n");
+					DEBUG('a',"Error, tamaño de lectura nulo\n");
 					break;
 				}
 			 
@@ -354,7 +343,7 @@ SyscallHandler(ExceptionType _et)
 				OpenFile *archivo = currentThread->GetArchivo(id);
 				
 				if (!archivo){
-					DEBUG('a', "--------------- Error: llamada a GetArchivo fallo.--------------- \n");
+					DEBUG('a', "Error: llamada a GetArchivo fallo.\n");
 					break;
 				}
 				
@@ -363,7 +352,7 @@ SyscallHandler(ExceptionType _et)
             
 			
 			if(escrito != size)
-				DEBUG('a', "--------------- Error: La cantidad escrita es distinta de la esperada--------------- \n");
+				DEBUG('a', "Error: La cantidad escrita es distinta de la esperada\n");
             
             delete[] buffer;
             
@@ -387,8 +376,8 @@ SetExceptionHandlers()
 {
     machine->SetHandler(NO_EXCEPTION,            &DefaultHandler);
     machine->SetHandler(SYSCALL_EXCEPTION,       &SyscallHandler);
-    machine->SetHandler(PAGE_FAULT_EXCEPTION,    &DefaultHandler);
-    machine->SetHandler(READ_ONLY_EXCEPTION,     &DefaultHandler);
+    machine->SetHandler(PAGE_FAULT_EXCEPTION,    &PageFaultHandler);
+    machine->SetHandler(READ_ONLY_EXCEPTION,     &ReadOnlytHandler);
     machine->SetHandler(BUS_ERROR_EXCEPTION,     &DefaultHandler);
     machine->SetHandler(ADDRESS_ERROR_EXCEPTION, &DefaultHandler);
     machine->SetHandler(OVERFLOW_EXCEPTION,      &DefaultHandler);
