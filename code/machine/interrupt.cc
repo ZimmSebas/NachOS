@@ -114,10 +114,11 @@ Interrupt::SetLevel(IntStatus now)
     ASSERT(IsIntStatus(now));
 
     IntStatus old = level;
-
+	
+	
     /// Interrupt handlers are prohibited from enabling interrupts.
     ASSERT(now == INT_OFF || !inHandler);
-
+	
     ChangeLevel(old, now);  /// Change to new state.
     if (now == INT_ON && old == INT_OFF)
         OneTick();  /// Advance simulated time.

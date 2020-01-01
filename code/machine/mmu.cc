@@ -213,6 +213,7 @@ MMU::Translate(unsigned virtAddr, unsigned *physAddr,
 {
     ASSERT(physAddr != nullptr);
     // We must have either a TLB or a page table, but not both!
+    
     ASSERT((tlb == nullptr) != (pageTable == nullptr));
 
     DEBUG('a', "\tTranslate: ");
