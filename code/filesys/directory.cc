@@ -26,6 +26,7 @@
 #include "lib/utility.hh"
 
 
+
 /// Initialize a directory; initially, the directory is completely empty.  If
 /// the disk is being formatted, an empty directory is all we need, but
 /// otherwise, we need to call FetchFrom in order to initialize it from disk.

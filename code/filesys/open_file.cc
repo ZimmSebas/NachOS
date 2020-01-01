@@ -20,16 +20,65 @@
 /// memory while the file is open.
 ///
 /// * `sector` is the location on disk of the file header for this file.
-OpenFile::OpenFile(int sector)
+OpenFile::OpenFile(int sector, const char *name)
 {
+    fileSystem->AcquireArcha();
+    
+    sect = sector;
+    miname = name;
+	
     hdr = new FileHeader;
     hdr->FetchFrom(sector);
+    
+    if(fileSystem->maplock.count(sect) == 0){
+        milock = new lockFS(miname);
+        fileSystem->maplock.insert( make_pair(sect, milock) );
+    } else
+        milock = fileSystem->maplock.find(sect)->second;
+    
+    fileSystem->archa.push_back(make_pair(currentThread,this));
+    
     seekPosition = 0;
+
+    fileSystem->ReleaseArcha();
 }
 
 /// Close a Nachos file, de-allocating any in-memory data structures.
 OpenFile::~OpenFile()
 {
+	fileSystem->AcquireArcha();
+
+	unsigned sz = fileSystem->archa.size();
+	pair<Thread*,OpenFile*> tmp = make_pair(currentThread,this);
+	
+	for(unsigned i = 0; i < sz; i++){
+		if(fileSystem->archa[i] == tmp){
+			fileSystem->archa.erase(fileSystem->archa.begin()+i);
+			break;
+		} 
+	}
+
+	bool encontre = false;
+
+	for(unsigned i = 0; i < sz-1; i++){ //Buscamos si alguien más tiene este archivo abierto
+		if( fileSystem->archa[i].second->getSector() == sect){
+			encontre = true;
+			break;
+		} 
+	}
+	
+	if(!encontre){ //Buscamos el sector en el mapa para eliminar el lock
+		delete fileSystem->maplock.find(sect)->second;
+		fileSystem->maplock.erase(sect);
+		if(fileSystem->todelete.count(sect) != 0){
+			char *nombreArchivo = fileSystem->todelete.find(sect)->second;
+      fileSystem->ReleaseArcha();
+			fileSystem->Remove(nombreArchivo);
+    } else
+      fileSystem->ReleaseArcha();
+	} else
+    fileSystem->ReleaseArcha();
+  
     delete hdr;
 }
 
@@ -103,20 +152,24 @@ OpenFile::Write(const char *into, unsigned numBytes)
 ///   read/written.
 
 int
-OpenFile::ReadAt(char *into, unsigned numBytes, unsigned position)
+OpenFile::ReadAt(char *into, unsigned numBytes, unsigned position, bool escribiendo)
 {
     ASSERT(into != nullptr);
     ASSERT(numBytes > 0);
+  
+    milock->AcquireRead(escribiendo);
 
     unsigned fileLength = hdr->FileLength();
     unsigned firstSector, lastSector, numSectors;
     char *buf;
 	
-	DEBUG('f', "Attempting to read %u bytes at %u, from file of lenght %u.\n",
-			numBytes, position, fileLength);
+    DEBUG('f', "Attempting to read %u bytes at %u, from file of lenght %u.\n",
+        numBytes, position, fileLength);
 	
-    if (position >= fileLength)
+    if (position >= fileLength){
+        milock->ReleaseRead(escribiendo);
         return 0;  // Check request.
+    }
     if (position + numBytes > fileLength)
         numBytes = fileLength - position;
     DEBUG('f', "Reading %u bytes at %u, from file of length %u.\n",
@@ -135,6 +188,9 @@ OpenFile::ReadAt(char *into, unsigned numBytes, unsigned position)
     // Copy the part we want.
     memcpy(into, &buf[position - firstSector * SECTOR_SIZE], numBytes);
     delete [] buf;
+    
+    milock->ReleaseRead(escribiendo);
+    
     return numBytes;
 }
 
@@ -144,13 +200,17 @@ OpenFile::WriteAt(const char *from, unsigned numBytes, unsigned position)
     ASSERT(from != nullptr);
     ASSERT(numBytes > 0);
 
+    milock->AcquireWrite();
+
     unsigned fileLength = hdr->FileLength();
     unsigned firstSector, lastSector, numSectors;
     bool firstAligned, lastAligned;
     char *buf;
 
-    if (position >= fileLength)
+    if (position >= fileLength){
+        milock->ReleaseWrite();
         return 0;  // Check request.
+    }
     if (position + numBytes > fileLength)
         numBytes = fileLength - position;
     DEBUG('f', "Writing %u bytes at %u, from file of length %u.\n",
@@ -167,10 +227,11 @@ OpenFile::WriteAt(const char *from, unsigned numBytes, unsigned position)
 
     // Read in first and last sector, if they are to be partially modified.
     if (!firstAligned)
-        ReadAt(buf, SECTOR_SIZE, firstSector * SECTOR_SIZE);
+        ReadAt(buf, SECTOR_SIZE, firstSector * SECTOR_SIZE, true);
     if (!lastAligned && (firstSector != lastSector || firstAligned))
         ReadAt(&buf[(lastSector - firstSector) * SECTOR_SIZE],
-               SECTOR_SIZE, lastSector * SECTOR_SIZE);
+               SECTOR_SIZE, lastSector * SECTOR_SIZE, true);
+
 
     // Copy in the bytes we want to change.
     memcpy(&buf[position - firstSector * SECTOR_SIZE], from, numBytes);
@@ -180,6 +241,9 @@ OpenFile::WriteAt(const char *from, unsigned numBytes, unsigned position)
         synchDisk->WriteSector(hdr->ByteToSector(i * SECTOR_SIZE),
                                &buf[(i - firstSector) * SECTOR_SIZE]);
     delete [] buf;
+    
+    milock->ReleaseWrite();
+    
     return numBytes;
 }
 
@@ -188,4 +252,16 @@ unsigned
 OpenFile::Length() const
 {
     return hdr->FileLength();
+}
+
+int
+OpenFile::getSector()
+{
+	return sect;
+}
+
+const char*
+OpenFile::getName()
+{
+  return miname;
 }

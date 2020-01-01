@@ -21,6 +21,7 @@
 
 
 #include "lib/utility.hh"
+#include "lockFileSys.hh"
 
 
 #ifdef FILESYS_STUB  // Temporarily implement calls to Nachos file system as
@@ -91,7 +92,7 @@ class OpenFile {
 public:
 
     /// Open a file whose header is located at `sector` on the disk.
-    OpenFile(int sector);
+    OpenFile(int sector, const char *name);
 
     /// Close the file.
     ~OpenFile();
@@ -107,16 +108,23 @@ public:
 
     /// Read/write bytes from the file, bypassing the implicit position.
 
-    int ReadAt(char *into, unsigned numBytes, unsigned position);
+    int ReadAt(char *into, unsigned numBytes, unsigned position, bool escribiendo = false);
     int WriteAt(const char *from, unsigned numBytes, unsigned position);
 
     // Return the number of bytes in the file (this interface is simpler than
     // the UNIX idiom -- `lseek` to end of file, `tell`, `lseek` back).
     unsigned Length() const;
+    
+    int getSector();
+    
+    const char *getName();
 
   private:
     FileHeader *hdr;  ///< Header for this file.
     unsigned seekPosition;  ///< Current position within the file.
+    int sect;
+    const char *miname;
+    lockFS *milock; /// < LockFS para lectura y escritura.
 };
 
 #endif

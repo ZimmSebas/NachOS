@@ -37,7 +37,14 @@
 
 
 #include "open_file.hh"
+#include "threads/synch.hh"
+#include "lockFileSys.hh"
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+using namespace std;
 
+class Thread;
 
 #ifdef FILESYS_STUB  // Temporarily implement file system calls as calls to
                      // UNIX, until the real file system implementation is
@@ -87,7 +94,8 @@ public:
     ///
     /// If `format`, there is nothing on the disk, so initialize the
     /// directory and the bitmap of free blocks.
-    FileSystem(bool format);
+    FileSystem();
+
 
     ~FileSystem();
 
@@ -109,11 +117,28 @@ public:
     /// List all the files and their contents.
     void Print();
 
+    void AcquireArcha();
+
+    void ReleaseArcha();
+
+    vector<pair<Thread*,OpenFile*>> archa;
+
+    unordered_map<int, lockFS*> maplock;
+    
+    unordered_map<int,char*> todelete;
+
+    void FormatConstructor(bool format);
+    
 private:
     OpenFile *freeMapFile;  ///< Bit map of free disk blocks, represented as a
                             ///< file.
     OpenFile *directoryFile;  ///< “Root” directory -- list of file names,
                               ///< represented as a file.
+    Lock *usoarcha;
+    
+    lockFS *fslock;
+    // para tener en un momento determinado unicamente 1 operacion de 
+    // modificacion de fs o varias operaciones de lectura
 };
 
 #endif

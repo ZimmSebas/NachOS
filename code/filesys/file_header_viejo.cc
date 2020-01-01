@@ -39,42 +39,17 @@ FileHeader::Allocate(Bitmap *freeMap, unsigned fileSize)
     ASSERT(freeMap != nullptr);
 
     raw.numBytes = fileSize;
+    raw.numSectors = DivRoundUp(fileSize, SECTOR_SIZE);
     
-    unsigned datos = DivRoundUp(fileSize, SECTOR_SIZE);
-    unsigned resto = 0;
-
-    if(fileSize > MAX_FILE_SIZE){
-		resto = DivRoundUp(datos, NUM_DIRECT);
-	}
-	
-    Indvector = vector<FileHeader*>(resto,0);
-  
-    raw.numSectors = datos + resto; 
-  
+    
+    
     if (freeMap->CountClear() < raw.numSectors)
         return false;  // Not enough space.
-	
-    if (fileSize > MAX_FILE_SIZE){
-		for (unsigned i = 0; i < raw.numSectors; i++)
-			raw.dataSectors[i] = freeMap->Find();
-	} else {
-		unsigned bytesRestantes = raw.numBytes;
-		for(unsigned i; i<resto; i++){
-			raw.dataSectors[i] = freeMap -> Find();
-			FileHeader *fhead = new FileHeader;
 
-			if(bytesRestantes > MAX_FILE_SIZE){
-				bytesRestantes -= MAX_FILE_SIZE;
-				fhead -> Allocate(freeMap,MAX_FILE_SIZE); 
-			} else {
-				fhead -> Allocate(freeMap,bytesRestantes);
-			}
-			Indvector[i] = fhead;
-		}
-	}
-	return true;
-}		
-	
+    for (unsigned i = 0; i < raw.numSectors; i++)
+        raw.dataSectors[i] = freeMap->Find();
+    return true;
+}
 
 /// De-allocate all the space allocated for data blocks for this file.
 ///
@@ -83,20 +58,8 @@ void
 FileHeader::Deallocate(Bitmap *freeMap)
 {
     ASSERT(freeMap != nullptr);
-	
-	for (auto &it : Indvector) {
-		it -> Deallocate(freeMap);
-		delete it;
-	}
-	Indvector.clear();
-	
-	unsigned total = raw.numSectors;
-	
-	if(raw.numBytes > MAX_FILE_SIZE){
-		total = DivRoundUp((DivRoundUp(raw.numBytes, SECTOR_SIZE)), NUM_DIRECT);
-	}
-	
-    for (unsigned i = 0; i < total; i++) { //En vez de ir a numSectors, ahora debe ir hasta el límite de indirección
+
+    for (unsigned i = 0; i < raw.numSectors; i++) {
         ASSERT(freeMap->Test(raw.dataSectors[i]));  // ought to be marked!
         freeMap->Clear(raw.dataSectors[i]);
     }
@@ -108,22 +71,7 @@ FileHeader::Deallocate(Bitmap *freeMap)
 void
 FileHeader::FetchFrom(unsigned sector)
 {
-	unsigned resto = 0;
-	synchDisk -> ReadSector(sector, (char *) &raw);
-	
-	if(raw.numBytes > MAX_FILE_SIZE)
-		resto = DivRoundUp((DivRoundUp(raw.numBytes, SECTOR_SIZE)), NUM_DIRECT);
-	
-	Indvector = vector<FileHeader*>(resto,0);
-
-    // Fetch all the RawFileHeaders of the next level of indirection
-    // and store them into the indirTable.
-    for(unsigned i = 0; i < resto; i++){
-        FileHeader* fhead = new FileHeader;
-        fhead -> FetchFrom(raw.dataSectors[i]);
-        Indvector[i] = fhead;
-    }
-    
+    synchDisk->ReadSector(sector, (char *) this);
 }
 
 /// Write the modified contents of the file header back to disk.
@@ -133,9 +81,6 @@ void
 FileHeader::WriteBack(unsigned sector)
 {
     synchDisk->WriteSector(sector, (char *) this);
-    
-	for(unsigned i = 0; i < Indvector.size(); i++)
-        Indvector[i] -> WriteBack(raw.dataSectors[i]);
 }
 
 /// Return which disk sector is storing a particular byte within the file.
@@ -147,11 +92,7 @@ FileHeader::WriteBack(unsigned sector)
 unsigned
 FileHeader::ByteToSector(unsigned offset)
 {
-    if(raw.numBytes > MAX_FILE_SIZE){
-		return Indvector[(offset / MAX_FILE_SIZE)] -> ByteToSector(offset % MAX_FILE_SIZE); //Me voy al último y llamo sobre el offset.
-	} else {
-		return raw.dataSectors[offset / SECTOR_SIZE];
-	}
+    return raw.dataSectors[offset / SECTOR_SIZE];
 }
 
 /// Return the number of bytes in the file.

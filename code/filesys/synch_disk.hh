@@ -12,7 +12,6 @@
 #include "machine/disk.hh"
 #include "threads/synch.hh"
 
-
 /// The following class defines a "synchronous" disk abstraction.
 ///
 /// As with other I/O devices, the raw physical disk is an asynchronous
@@ -50,6 +49,5 @@ private:
     Lock *lock;  ///< Only one read/write request can be sent to the disk at
                  ///< a time.
 };
-
 
 #endif

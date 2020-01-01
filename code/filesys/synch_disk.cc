@@ -12,9 +12,7 @@
 /// All rights reserved.  See `copyright.h` for copyright notice and
 /// limitation of liability and disclaimer of warranty provisions.
 
-
 #include "synch_disk.hh"
-
 
 /// Disk interrupt handler.  Need this to be a C routine, because C++ cannot
 /// handle pointers to member functions.
