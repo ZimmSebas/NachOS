@@ -15,9 +15,10 @@
 int
 main(void)
 {
-    //~ static char* a = "PAPEPIPOPU";
+    //~ static char* a = "ToyEnH    \n";
     
+    //~ Write(a,12,CONSOLE_OUTPUT);
     
-    Halt();
+    Exit(0);
     // Not reached.
 }

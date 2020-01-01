@@ -59,8 +59,10 @@ main(void)
             }
              
             newProc = Exec(argv,joineable);
-            if(joineable)
+            if(joineable){
               Join(newProc);
+              
+              }
         }
     }
 }

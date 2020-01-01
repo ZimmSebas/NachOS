@@ -34,7 +34,7 @@ CFLAGS       = -std=c99 -G 0 -c $(INCLUDE_DIRS) -mips1 -mfp32 \
                -nostdlib -nostartfiles -nodefaultlibs -mno-abicalls
 
 PROGRAMS = halt shell tiny_shell matmult sort filetest create read \
-		   While1 Test_Exec readwriteconsole args cp cat
+		   While1 Test_Exec readwriteconsole args cp cat testfs1 testfs2
 
 
 .PHONY: all clean
