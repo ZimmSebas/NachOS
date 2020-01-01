@@ -6,9 +6,7 @@ educational operating system.
 You are reading the readme file for the Nachos version *unr19c*. This version
 was released in 2019 by teachers of the National University of Rosario.
 
-### Development Repository
-
-* (https://git.dcc.fceia.unr.edu.ar/mstreet/nachos-base)
+[Development Repository](https://git.dcc.fceia.unr.edu.ar/mstreet/nachos-base)
 
 ### Original Nachos
 
