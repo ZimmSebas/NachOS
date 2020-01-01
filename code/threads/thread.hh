@@ -184,15 +184,25 @@ public:
 
 	OpenFile *GetArchivo(OpenFileId id);
 	
-    SpaceId myid;
-    // Save user-level register state.
-    void SaveUserState();
+  SpaceId myid;
+  // Save user-level register state.
+  void SaveUserState();
 
-    // Restore user-level register state.
-    void RestoreUserState();
+  // Restore user-level register state.
+  void RestoreUserState();
 
-    // User code this thread is running.
-    AddressSpace *space;
+  // User code this thread is running.
+  AddressSpace *space;
+#endif
+#ifdef FILESYS
+  unsigned usandoFS;
+  // representa si el Thread esta usando el fs o no  para saber si se
+  // puede encargar de destruir los Threads.
+  // Al destruir un Thread se elimina el SWAP, asi que es necesario que
+  // quien lo haga no este usando el fs.
+  // Si usandoFS es 0 entonces no esta usando el fs.
+  // Si usandoFS es mayor a 0 entonces esta usando el fs.
+
 #endif
 };
 

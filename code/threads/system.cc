@@ -25,7 +25,12 @@
 
 Statistics *stats;            ///< Performance metrics.
 Thread *currentThread;        ///< The thread we are running now.
+
+#ifdef FILESYS
+set<Thread*> threadsToBeDestroyed; // Threads a destruir
+#else
 Thread *threadToBeDestroyed;  ///< The thread that just finished.
+#endif
 Scheduler *scheduler;         ///< The ready list.
 Interrupt *interrupt;         ///< Interrupt status.
 Timer *timer;                 ///< The hardware timer device, for invoking
@@ -147,7 +152,6 @@ Initialize(int argc, char **argv)
 #ifdef USER_PROGRAM
         if (!strcmp(*argv, "-s"))
             debugUserProg = true;
-        corriendo = new Table<Thread*>;
 #endif
 #ifdef FILESYS_NEEDED
         if (!strcmp(*argv, "-f"))
@@ -171,11 +175,16 @@ Initialize(int argc, char **argv)
     interrupt = new Interrupt;                        // Start up interrupt handling.
     scheduler = new Scheduler;                        // Initialize the ready queue.
     consola = new SynchConsole("Consola-global");     // Consola Global
+#ifdef USER_PROGRAM
+    corriendo = new Table<Thread*>;                   // Initialize tabla de threads corriendo
+#endif
     if (randomYield)                                  // Start the timer (if needed).
         timer = new Timer(TimerInterruptHandler, 0, randomYield);
     else
         timer = new Timer(TimerInterruptHandler, 0, false);
+    #ifndef FILESYS
     threadToBeDestroyed = nullptr;
+    #endif
 
     // We did not explicitly allocate the current thread we are running in.
     // But if it ever tries to give up the CPU, we better have a `Thread`
@@ -207,7 +216,13 @@ Initialize(int argc, char **argv)
 #endif
 
 #ifdef FILESYS_NEEDED
+#ifndef FILESYS_STUB
+    fileSystem = new FileSystem();
+    fileSystem->FormatConstructor(format);
+#else
     fileSystem = new FileSystem(format);
+#endif
+
 #endif
 
 #ifdef VMEM

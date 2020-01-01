@@ -64,6 +64,7 @@ void
 Semaphore::P()
 {
     IntStatus oldLevel = interrupt->SetLevel(INT_OFF);
+
       // Disable interrupts.
 
     while (value == 0) {  // Semaphore not available.
@@ -71,10 +72,8 @@ Semaphore::P()
         currentThread->Sleep();
     }
     value--;  // Semaphore available, consume its value.
-
     interrupt->SetLevel(oldLevel);  // Re-enable interrupts.
 }
-
 /// Increment semaphore value, waking up a waiter if necessary.
 ///
 /// As with `P`, this operation must be atomic, so we need to disable
@@ -126,7 +125,7 @@ Lock::Acquire()
     if(thread != nullptr && thread->GetPrio() < currentThread->GetPrio() ){
         thread->SetPrio(currentThread->GetPrio() );
     }
-
+	
     monosem->P();
     
     prioactual = currentThread->GetPrio();
@@ -143,7 +142,9 @@ Lock::Release()
     DEBUG('s',"Prioridad %u a setear a %s\n",prioactual,currentThread->GetName() );
     currentThread->SetPrio(prioactual);
     thread = nullptr;
-    monosem->V();
+    
+    monosem->V();    
+    
     DEBUG('s',"Hilo %s hizo release de lock %s\n",currentThread->GetName(),name);
 }
 

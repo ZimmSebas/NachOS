@@ -36,7 +36,6 @@ Scheduler::~Scheduler()
     for (unsigned i = 0; i < colas; i++){
         delete readyList[i];
     } 
-    //~ delete readyList;
 }
 
 /// Mark a thread as ready, but not running.
@@ -117,10 +116,21 @@ Scheduler::Run(Thread *nextThread)
     // need to delete its carcass.  Note we cannot delete the thread before
     // now (for example, in `Thread::Finish`), because up to this point, we
     // were still running on the old thread's stack!
-    if (threadToBeDestroyed != nullptr) {
-        delete threadToBeDestroyed;
-        threadToBeDestroyed = nullptr;
+    #ifdef FILESYS
+    if ( (!currentThread->usandoFS) && (!threadsToBeDestroyed.empty()) ){
+        for(auto it = threadsToBeDestroyed.begin() ; it != threadsToBeDestroyed.end() ;){
+            Thread *tmp = *it;
+            it = threadsToBeDestroyed.erase(it);
+            delete tmp;
+      }
     }
+    #else
+    if (threadToBeDestroyed != nullptr) {
+        Thread* threadtemp = threadToBeDestroyed;
+        threadToBeDestroyed = nullptr;
+        delete threadtemp;
+    }
+    #endif
 
 
 #ifdef USER_PROGRAM

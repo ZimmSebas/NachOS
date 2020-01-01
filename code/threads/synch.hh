@@ -19,8 +19,6 @@
 #ifndef NACHOS_THREADS_SYNCH__HH
 #define NACHOS_THREADS_SYNCH__HH
 
-
-//~ #include "thread.hh"
 #include "lib/list.hh"
 
 class Thread;
@@ -55,7 +53,7 @@ public:
     /// Both of them must be *atomic*.
     void P();
     void V();
-
+    
 private:
 
     /// For debugging.
@@ -110,7 +108,6 @@ private:
     Thread* thread;
     Semaphore *monosem;
     int prioactual;
-    //~ int prioantigua;
     
     // Add other needed fields here.
 };

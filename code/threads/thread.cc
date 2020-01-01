@@ -48,18 +48,21 @@ Thread::Thread(const char *threadName, bool usojoin, unsigned prio)
     joineable = usojoin;
     if(joineable)
         tport = new Port(name);
-    
-    
+
 #ifdef USER_PROGRAM
-	tablarch  = new Table<OpenFile*>;
-	tablarch->Add(nullptr);tablarch->Add(nullptr); // Reservamos id 0 y 1 para STDIN y STDOUT
+    tablarch  = new Table<OpenFile*>;
+    tablarch->Add(nullptr);tablarch->Add(nullptr); // Reservamos id 0 y 1 para STDIN y STDOUT
     prioridad = prio;
     
     //ojo que todos los hilos son procesos (separar del constructor)
     
     myid = corriendo->Add(this);
 	
-    space     = nullptr;
+    space = nullptr;
+#endif
+
+#ifdef FILESYS
+  usandoFS = 0;
 #endif
 }
 
@@ -216,7 +219,11 @@ Thread::Finish(int estado)
 	
     if(joineable)
         tport->Send(estado);
+    #ifdef FILESYS
+    threadsToBeDestroyed.insert(currentThread);
+    #else
     threadToBeDestroyed = currentThread; 
+    #endif
     Sleep();  // Invokes `SWITCH`.
     // Not reached.
 }
@@ -286,17 +293,15 @@ Thread::Sleep()
     while ((nextThread = scheduler->FindNextToRun()) == nullptr) {
         interrupt->Idle();  // No one to run, wait for an interrupt.
     }
-
+	
     scheduler->Run(nextThread);  // Returns when we have been signalled.
 }
 
 int
 Thread::Join()
 {
-	DEBUG('t',"Empiezo a esperar\n");
 	int msg;
 	tport->Receive(&msg);
-	DEBUG('t',"Hijo termino\n");
 	return msg;	
 }
 

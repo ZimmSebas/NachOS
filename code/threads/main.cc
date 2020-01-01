@@ -67,7 +67,6 @@
 #include "lib/utility.hh"
 #include "system.hh"
 
-
 // External functions used by this file.
 
 void ThreadTest();
@@ -130,7 +129,7 @@ main(int argc, char **argv)
             interrupt->Halt();  // Once we start the console, then Nachos
                                 // will loop forever waiting for console
                                 // input.
-        } else if (!strcmp(*argv, "-sc")) {  // Test the console.
+        } else if (!strcmp(*argv, "-sc")) {  // Test the synch console.
         
             if (argc == 1)
                 //~ SynchConsoleTest(nullptr, nullptr);

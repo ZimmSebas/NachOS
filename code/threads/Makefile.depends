@@ -40,7 +40,8 @@ thread.o: ../threads/thread.cc ../threads/thread.hh ../lib/utility.hh \
  ../threads/system.hh ../threads/scheduler.hh \
  ../userprog/synch_console.hh ../machine/console.hh ../threads/synch.hh \
  ../machine/interrupt.hh ../machine/statistics.hh ../machine/timer.hh \
- ../threads/port.hh ../threads/synch_list.hh ../filesys/open_file.hh
+ ../threads/port.hh ../threads/synch_list.hh ../filesys/open_file.hh \
+ ../filesys/lockFileSys.hh
 debug.o: ../lib/debug.cc ../lib/debug.hh ../lib/utility.hh \
  ../machine/system_dep.hh
 utility.o: ../lib/utility.cc ../lib/utility.hh ../lib/debug.hh \

@@ -16,7 +16,9 @@
 #include "machine/interrupt.hh"
 #include "machine/statistics.hh"
 #include "machine/timer.hh"
+#include <set>
 
+using namespace std;
 
 /// Initialization and cleanup routines.
 
@@ -28,7 +30,11 @@ extern void Cleanup();
 
 
 extern Thread *currentThread;        ///< The thread holding the CPU.
+#ifdef FILESYS
+extern set<Thread*> threadsToBeDestroyed; // Threads a destruir
+#else
 extern Thread *threadToBeDestroyed;  ///< The thread that just finished.
+#endif
 extern Scheduler *scheduler;         ///< The ready list.
 extern Interrupt *interrupt;         ///< Interrupt status.
 extern Statistics *stats;            ///< Performance metrics.
@@ -57,8 +63,6 @@ extern SynchDisk *synchDisk;
 #include "vmem/core_map.hh"
 extern CoreMap *coremap;
 #endif
-
-
 
 #ifdef NETWORK
 #include "network/post.hh"
